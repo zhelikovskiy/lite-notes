@@ -1,18 +1,15 @@
-import { DataSource, Repository } from 'typeorm';
+import { AppDataSource } from '../../database';
+import { Repository } from 'typeorm';
 import { User } from '../../entities/user.entity';
 import * as bcrypt from 'bcryptjs';
 
-export class UserService {
-	private userRepository: Repository<User>;
+const UserRepository: Repository<User> = AppDataSource.getRepository(User);
 
-	constructor(private dataSource: DataSource) {
-		this.userRepository = this.dataSource.getRepository(User);
-	}
-
-	async create(userData: any): Promise<User> {
+const create = async (userData: any): Promise<User> => {
+	try {
 		const { email, name, password, role, image } = userData;
 
-		const existingUser = await this.userRepository.findOne({
+		const existingUser = await UserRepository.findOne({
 			where: { email, name },
 		});
 
@@ -28,27 +25,31 @@ export class UserService {
 		newUser.email = email;
 		newUser.name = name;
 		newUser.passwordHash = passwordHash;
-		newUser.salt = salt;
 		newUser.role = role || 'user';
 		newUser.image = image || '';
 
-		try {
-			return this.userRepository.save(newUser);
-		} catch (error) {
-			console.error('Error creating user: ', error);
-			throw new Error('Error creating user');
-		}
+		return await UserRepository.save(newUser);
+	} catch (error) {
+		console.error('Error creating user: ', error);
+		throw new Error('Error creating user');
 	}
+};
 
-	async getAll(): Promise<User[]> {
-		return this.userRepository.find();
-	}
+const getAll = async (): Promise<User[]> => {
+	return await UserRepository.find();
+};
 
-	async getById(id: string): Promise<User | null> {
-		return this.userRepository.findOneBy({ id });
-	}
+const getById = async (id: string): Promise<User | null> => {
+	return await UserRepository.findOneBy({ id });
+};
 
-	async getByEmail(email: string): Promise<User | null> {
-		return this.userRepository.findOneBy({ email });
-	}
-}
+const getByEmail = async (email: string): Promise<User | null> => {
+	return await UserRepository.findOneBy({ email });
+};
+
+export default {
+	create,
+	getAll,
+	getById,
+	getByEmail,
+};

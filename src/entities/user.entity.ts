@@ -15,9 +15,6 @@ export class User {
 	passwordHash: string;
 
 	@Column()
-	salt: string;
-
-	@Column()
 	role: string;
 
 	@Column()
