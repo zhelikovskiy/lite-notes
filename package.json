@@ -41,7 +41,8 @@
 		"swagger-jsdoc": "^6.2.8",
 		"swagger-ui-express": "^5.0.1",
 		"typeorm": "^0.3.20",
-		"typescript": "^5.7.2"
+		"typescript": "^5.7.2",
+		"zod": "^3.24.1"
 	},
 	"devDependencies": {
 		"@types/bcryptjs": "^2.4.6",

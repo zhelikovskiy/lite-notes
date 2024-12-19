@@ -1,9 +1,6 @@
 import passport from 'passport';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
-import { UserService } from '../modules/users/user.service';
-import { AppDataSource } from '../database';
-
-const userService = new UserService(AppDataSource);
+import userService from '../modules/users/user.service';
 
 const passportConfig = () => {
 	passport.use(
