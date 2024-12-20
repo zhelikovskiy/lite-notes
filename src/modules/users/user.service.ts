@@ -2,7 +2,7 @@ import { AppDataSource } from '../../database';
 import { DeleteResult, Repository } from 'typeorm';
 import { User } from '../../entities/user.entity';
 import * as bcrypt from 'bcryptjs';
-import { UserRole } from '../../entities/user.entity';
+import { UserRoles } from '../../entities/user.entity';
 import CreateUserDto from './dto/create-user.dto';
 
 const UserRepository: Repository<User> = AppDataSource.getRepository(User);
@@ -27,7 +27,7 @@ const create = async (userData: CreateUserDto): Promise<User> => {
 		newUser.email = email;
 		newUser.name = name;
 		newUser.passwordHash = passwordHash;
-		newUser.role = role || UserRole.USER;
+		newUser.role = role || UserRoles.USER;
 		newUser.image = image || '';
 
 		return await UserRepository.save(newUser);
