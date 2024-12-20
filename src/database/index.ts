@@ -1,11 +1,12 @@
 import { DataSource } from 'typeorm';
+import { User } from '../entities/user.entity';
 
 export const AppDataSource = new DataSource({
 	type: 'sqlite',
 	database: process.env.DB_NAME || 'lite-notes.sqlite',
-	entities: [__dirname + '/../**/*.entity.{ts,js}'],
-	synchronize: false,
-	logging: process.env.NODE_ENV !== 'production',
+	entities: [User],
+	synchronize: true,
+	logging: false,
 });
 
 export const connectToDatabase = async () => {
