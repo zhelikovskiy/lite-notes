@@ -1,11 +1,13 @@
 import { AppDataSource } from '../../database';
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
 import { User } from '../../entities/user.entity';
 import * as bcrypt from 'bcryptjs';
+import { UserRole } from '../../entities/user.entity';
+import CreateUserDto from './dto/create-user.dto';
 
 const UserRepository: Repository<User> = AppDataSource.getRepository(User);
 
-const create = async (userData: any): Promise<User> => {
+const create = async (userData: CreateUserDto): Promise<User> => {
 	try {
 		const { email, name, password, role, image } = userData;
 
@@ -25,7 +27,7 @@ const create = async (userData: any): Promise<User> => {
 		newUser.email = email;
 		newUser.name = name;
 		newUser.passwordHash = passwordHash;
-		newUser.role = role || 'user';
+		newUser.role = role || UserRole.USER;
 		newUser.image = image || '';
 
 		return await UserRepository.save(newUser);
@@ -47,9 +49,14 @@ const getByEmail = async (email: string): Promise<User | null> => {
 	return await UserRepository.findOneBy({ email });
 };
 
+const deleteOne = async (id: string): Promise<DeleteResult> => {
+	return await UserRepository.delete(id);
+};
+
 export default {
 	create,
 	getAll,
 	getById,
 	getByEmail,
+	deleteOne,
 };

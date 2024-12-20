@@ -1,4 +1,4 @@
-import { Response, Request, RequestHandler } from 'express';
+import { Response, Request } from 'express';
 import userService from '../users/user.service';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
@@ -23,7 +23,7 @@ const register = async (req: Request, res: Response) => {
 		const user = await userService.create(validatedData);
 
 		const token = jwt.sign(
-			{ id: user.id },
+			{ id: user.id, role: user.role, name: user.name },
 			process.env.JWT_SECRET || 'secret',
 			{
 				expiresIn: '1d',
@@ -67,9 +67,13 @@ const login = async (req: Request, res: Response) => {
 			return res.status(401).json({ message: 'Invalid credentials' });
 		}
 
-		const token = jwt.sign({ id: user.id }, 'your-secret-key', {
-			expiresIn: '1h',
-		});
+		const token = jwt.sign(
+			{ id: user.id, role: user.role, name: user.name },
+			process.env.JWT_SECRET || 'secret',
+			{
+				expiresIn: '1d',
+			}
+		);
 
 		return res.status(200).json({ message: 'Sign in successful', token, user });
 	} catch (error: Error | any) {
