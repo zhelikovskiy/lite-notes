@@ -131,3 +131,6 @@ dist
 
 #sqlite files
 *.sqlite
+
+#files
+uploads
