@@ -4,6 +4,7 @@ import { User } from '../../entities/user.entity';
 import * as bcrypt from 'bcryptjs';
 import { UserRoles } from '../../entities/user.entity';
 import CreateUserDto from './dto/create-user.dto';
+import UpdateUserDto from './dto/update-user.dto';
 
 const UserRepository: Repository<User> = AppDataSource.getRepository(User);
 
@@ -53,10 +54,39 @@ const deleteOne = async (id: string): Promise<DeleteResult> => {
 	return await UserRepository.delete(id);
 };
 
+const updateOne = async (userData: UpdateUserDto) => {
+	try {
+		const { email, name, password, image } = userData;
+
+		const user = await UserRepository.findOneBy({ email, name });
+
+		if (!user) {
+			throw new Error('User not found');
+		}
+
+		if (password) {
+			const salt = await bcrypt.genSalt();
+			const passwordHash = await bcrypt.hash(password, salt);
+
+			user.passwordHash = passwordHash;
+		}
+
+		if (image) {
+			user.image = image;
+		}
+
+		return await UserRepository.save(user);
+	} catch (error) {
+		console.error('Error creating user: ', error);
+		throw new Error('Error creating user');
+	}
+};
+
 export default {
 	create,
 	getAll,
 	getById,
 	getByEmail,
+	updateOne,
 	deleteOne,
 };

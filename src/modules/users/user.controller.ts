@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { z } from 'zod';
 import userSerivice from './user.service';
 import { UserRoles } from '../../entities/user.entity';
+import { storage } from '../file-storage/file.storage';
 
 const createUserDataSchema = z.object({
 	email: z.string().email(),
@@ -13,6 +14,13 @@ const createUserDataSchema = z.object({
 
 const getUserDataSchema = z.object({
 	id: z.string(),
+});
+
+const updateUserDataSchema = z.object({
+	email: z.string().email().optional(),
+	name: z.string().optional(),
+	password: z.string().optional(),
+	image: z.string().optional(),
 });
 
 const create = async (req: Request, res: Response) => {
@@ -39,9 +47,9 @@ const create = async (req: Request, res: Response) => {
 
 const getAll = async (req: Request, res: Response) => {
 	try {
-		const users = await userSerivice.getAll();
+		console.log(req.user);
 
-		console.log(req.params);
+		const users = await userSerivice.getAll();
 
 		return res.status(200).json({ users });
 	} catch (error: Error | any) {
@@ -75,6 +83,35 @@ const getOne = async (req: Request, res: Response) => {
 	}
 };
 
+const updateOne = async (req: Request, res: Response) => {
+	try {
+		const validatedData = await updateUserDataSchema.parseAsync(req.body);
+
+		if (req.file && req.user) {
+			const { id: userId } = req.user as { id: string };
+			const filePath = await storage.uploadFile(userId, req.file);
+
+			validatedData.image = storage.getFileUrl(filePath);
+		}
+
+		const user = await userSerivice.updateOne(validatedData);
+
+		return res.status(200).json({ user });
+	} catch (error: Error | any) {
+		console.error('UserController.updateOne() error:', error);
+
+		if (error instanceof z.ZodError) {
+			return res
+				.status(400)
+				.json({ message: 'Validation error', errors: error.format() });
+		}
+
+		return res
+			.status(500)
+			.json({ message: 'Error updating user', error: error.message });
+	}
+};
+
 const deleteOne = async (req: Request, res: Response) => {
 	try {
 		const { id } = await getUserDataSchema.parseAsync(req.params);
@@ -97,4 +134,4 @@ const deleteOne = async (req: Request, res: Response) => {
 	}
 };
 
-export default { create, getAll, getOne, deleteOne };
+export default { create, getAll, getOne, updateOne, deleteOne };

@@ -3,6 +3,7 @@ import userController from './user.controller';
 import passport from 'passport';
 import verifyRole from '../../middlewares/verify-role.middleware';
 import { UserRoles } from '../../entities/user.entity';
+import upload from '../../configs/multer.config';
 
 const router = express.Router();
 
@@ -21,6 +22,12 @@ router.get(
 	'/',
 	passport.authenticate('jwt', { session: false }),
 	userController.getAll as any
+);
+router.post(
+	'/:id',
+	passport.authenticate('jwt', { session: false }),
+	upload.single('file'),
+	userController.updateOne as any
 );
 router.delete(
 	'/:id',
