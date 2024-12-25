@@ -16,7 +16,9 @@ const passportConfig = () => {
 					if (!user) {
 						return done(null, false);
 					}
-					return done(null, user);
+
+					const { id, email, name, role, image } = user;
+					return done(null, { id, email, name, role, image });
 				} catch (error) {
 					return done(error, false);
 				}
