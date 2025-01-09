@@ -47,8 +47,6 @@ const create = async (req: Request, res: Response) => {
 
 const getAll = async (req: Request, res: Response) => {
 	try {
-		console.log(req.user);
-
 		const users = await userSerivice.getAll();
 
 		return res.status(200).json({ users });

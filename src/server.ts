@@ -9,6 +9,9 @@ const startServer = async () => {
 
 		app.listen(PORT, () => {
 			console.log(`Server started on port ${PORT}`);
+			console.log(
+				`Swagger UI available at http://localhost:${PORT}/api/swagger`
+			);
 		});
 	} catch (error) {
 		console.error('Error starting server:', error);

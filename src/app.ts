@@ -2,11 +2,11 @@ import 'reflect-metadata';
 import express from 'express';
 import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
-import swaggerJsdoc from 'swagger-jsdoc';
+import dotenv from 'dotenv';
 import passportConfig from './configs/password.config';
+import swaggerDocument from './configs/swagger.config';
 import authRouter from './modules/auth/auth.router';
 import userRouter from './modules/users/user.router';
-import dotenv from 'dotenv';
 
 const app = express();
 
@@ -15,6 +15,8 @@ passportConfig();
 
 app.use(cors());
 app.use(express.json());
+
+app.use('/api/swagger', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use('/api/auth', authRouter);
 app.use('/api/users', userRouter);
