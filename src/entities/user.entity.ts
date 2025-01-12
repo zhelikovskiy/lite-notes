@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { Note } from './note.entity';
 
 export enum UserRoles {
 	ADMIN = 'admin',
@@ -24,4 +25,7 @@ export class User {
 
 	@Column()
 	image: string;
+
+	@OneToMany(() => Note, (note) => note.user)
+	notes: Note[];
 }
