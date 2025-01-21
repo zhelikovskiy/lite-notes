@@ -6,7 +6,7 @@ import {
 	PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from './user.entity';
-import { NoteImage } from './note-image.entity';
+import { Image } from './image.entity';
 
 @Entity()
 export class Note {
@@ -22,6 +22,6 @@ export class Note {
 	@ManyToOne(() => User, (user) => user.notes)
 	user: User;
 
-	@OneToMany(() => NoteImage, (image) => image.note)
-	images: NoteImage[];
+	@OneToMany(() => Image, (image) => image.note)
+	images: Image[];
 }
