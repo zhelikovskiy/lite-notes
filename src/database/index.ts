@@ -1,10 +1,12 @@
 import { DataSource } from 'typeorm';
 import { User } from '../entities/user.entity';
+import { Note } from '../entities/note.entity';
+import { NoteImage } from '../entities/note-image.entity';
 
 export const AppDataSource = new DataSource({
 	type: 'sqlite',
 	database: process.env.DB_NAME || 'lite-notes.sqlite',
-	entities: [User],
+	entities: [User, Note, NoteImage],
 	synchronize: true,
 	logging: false,
 });

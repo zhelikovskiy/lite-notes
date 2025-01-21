@@ -16,7 +16,7 @@ export class Note {
 	@Column()
 	title: string;
 
-	@Column({ type: 'text' })
+	@Column({ type: 'text', nullable: true })
 	content: string;
 
 	@ManyToOne(() => User, (user) => user.notes)
