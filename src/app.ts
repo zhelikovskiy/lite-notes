@@ -7,6 +7,7 @@ import passportConfig from './configs/password.config';
 import swaggerDocument from './configs/swagger.config';
 import authRouter from './modules/auth/auth.router';
 import userRouter from './modules/users/user.router';
+import noteRouter from './modules/notes/note.router';
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.use('/api/swagger', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use('/api/auth', authRouter);
 app.use('/api/users', userRouter);
+app.use('/api/notes', noteRouter);
 
 app.use('/api/uploads', express.static('uploads'));
 
