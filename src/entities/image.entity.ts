@@ -13,6 +13,6 @@ export class Image {
 	@ManyToOne(() => User, (user) => user.images)
 	user: User;
 
-	@ManyToOne(() => Note, (note) => note.images)
+	@ManyToOne(() => Note, (note) => note.images, { nullable: true })
 	note: Note;
 }
