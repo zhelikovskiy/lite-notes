@@ -24,31 +24,47 @@ class LocalFileStorage implements FileStorage {
 		file: Express.Multer.File,
 		subPath?: string
 	): Promise<string> {
-		const userUploadDir = subPath
-			? path.join(this.uploadFolder, userId, subPath)
-			: path.join(this.uploadFolder, userId);
+		try {
+			const userUploadDir = subPath
+				? path.join(this.uploadFolder, userId, subPath)
+				: path.join(this.uploadFolder, userId);
 
-		await this.ensureDirectoryExists(userUploadDir);
+			await this.ensureDirectoryExists(userUploadDir);
 
-		const sanitizedFileName = `${Date.now()}-${file.originalname.replace(
-			/[^a-zA-Z0-9.\-_]/g,
-			''
-		)}`;
-		const filePathForFS = path.join(userUploadDir, sanitizedFileName);
-		const filePathForUrl = path.posix.join(
-			userId,
-			subPath || '',
-			sanitizedFileName
-		);
+			const sanitizedFileName = `${Date.now()}-${file.originalname.replace(
+				/[^a-zA-Z0-9.\-_]/g,
+				''
+			)}`;
+			const filePathForFS = path.join(userUploadDir, sanitizedFileName);
+			const filePathForUrl = path.posix.join(
+				userId,
+				subPath || '',
+				sanitizedFileName
+			);
 
-		await fs.writeFile(filePathForFS, file.buffer);
+			await fs.writeFile(filePathForFS, file.buffer);
 
-		return filePathForUrl;
+			return filePathForUrl;
+		} catch (error) {
+			console.error('Error uploading file: ', error);
+			throw new Error('File upload failed');
+		}
 	}
 
 	getFileUrl(filePath: string): string {
 		const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
 		return `${baseUrl}/api/uploads/${filePath}`;
+	}
+
+	async deleteFile(filePath: string): Promise<void> {
+		try {
+			const fullPath = path.join(this.uploadFolder, filePath);
+			await fs.unlink(fullPath);
+			console.log(`File deleted: ${fullPath}`);
+		} catch (error) {
+			console.error(`Error deleting file: ${filePath}`, error);
+			throw new Error('File deletion failed');
+		}
 	}
 }
 

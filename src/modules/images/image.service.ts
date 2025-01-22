@@ -2,29 +2,49 @@ import { ImageRepository } from '../../database';
 import { Image } from '../../entities/image.entity';
 import { Note } from '../../entities/note.entity';
 import { User } from '../../entities/user.entity';
+import { ImageStorage } from '../file-storage/file.storage';
 
-const create = async (url: string, user: User, note?: Note): Promise<Image> => {
-	try {
-		const newImage = new Image();
+const uploadImage = async (
+	user: User,
+	file: Express.Multer.File
+): Promise<Image> => {
+	const filePath = await ImageStorage.uploadFile(user.id, file);
 
-		newImage.url = url;
-		newImage.user = user;
+	const image = new Image();
+	image.url = filePath; // Сохраняем относительный путь
+	image.user = user;
 
-		if (note) {
-			newImage.note = note;
-		}
-
-		return await ImageRepository.save(newImage);
-	} catch (error) {
-		console.error('Error creating image: ', error);
-		throw new Error('Error creating image');
-	}
+	return await ImageRepository.save(image);
 };
 
-const getOne = async (id: string, user: User): Promise<Image | null> => {
+const getOneById = async (id: string, user: User): Promise<Image | null> => {
 	return await ImageRepository.findOne({
 		where: { id, user },
 	});
 };
 
-export default { create, getOne };
+const getImageUrlById = async (id: string, user: User): Promise<string> => {
+	const image = await getOneById(id, user);
+
+	if (!image) {
+		throw new Error('Image not found');
+	}
+
+	return ImageStorage.getFileUrl(image.url); // Передаем относительный путь
+};
+
+const deleteOneById = async (id: string, user: User): Promise<void> => {
+	const image = await ImageRepository.findOne({
+		where: { id, user },
+	});
+
+	if (!image) {
+		throw new Error('Image not found');
+	}
+
+	await ImageStorage.deleteFile(image.url); // Передаем относительный путь
+
+	await ImageRepository.remove(image);
+};
+
+export default { uploadImage, getOneById, deleteOneById, getImageUrlById };
