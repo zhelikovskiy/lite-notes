@@ -18,7 +18,7 @@ const uploadImage = async (req: Request, res: Response) => {
 			return res.status(400).json({ message: 'No file provided' });
 		}
 
-		const image = await imageService.uploadImage(user, file);
+		const image = await imageService.create(user, file);
 
 		return res.status(201).json({ message: 'Image uploaded', image });
 	} catch (error: Error | any) {
@@ -27,6 +27,20 @@ const uploadImage = async (req: Request, res: Response) => {
 		return res
 			.status(500)
 			.json({ message: 'Upload failed', error: error.message });
+	}
+};
+
+const getAll = async (req: Request, res: Response) => {
+	try {
+		const images = await imageService.getAll();
+
+		return res.status(200).json({ images });
+	} catch (error: Error | any) {
+		console.error('ImageController.getAll() error:', error);
+
+		return res
+			.status(500)
+			.json({ message: 'Error retrieving images', error: error.message });
 	}
 };
 
@@ -39,13 +53,13 @@ const getUrl = async (req: Request, res: Response) => {
 			return res.status(401).json({ message: 'Unauthorized' });
 		}
 
-		const image = await imageService.getOneById(imageId, user);
+		const image = await imageService.getOneById(imageId);
 
 		if (!image) {
 			return res.status(404).json({ message: 'Image not found' });
 		}
 
-		const imageUrl = await imageService.getImageUrlById(imageId, user);
+		const imageUrl = await imageService.getImageUrlById(imageId);
 
 		return res.status(200).json({ imageUrl });
 	} catch (error: Error | any) {
@@ -60,13 +74,8 @@ const getUrl = async (req: Request, res: Response) => {
 const deleteImage = async (req: Request, res: Response) => {
 	try {
 		const imageId = req.params.id;
-		const user = req.user as User;
 
-		if (!user) {
-			return res.status(401).json({ message: 'Unauthorized' });
-		}
-
-		await imageService.deleteOneById(imageId, user);
+		await imageService.deleteOneById(imageId);
 
 		return res.status(200).json({ message: 'Image deleted' });
 	} catch (error: Error | any) {
@@ -78,4 +87,4 @@ const deleteImage = async (req: Request, res: Response) => {
 	}
 };
 
-export default { uploadImage, getUrl, deleteImage };
+export default { uploadImage, getAll, getUrl, deleteImage };

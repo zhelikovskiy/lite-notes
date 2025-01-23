@@ -1,4 +1,4 @@
-import { AppDataSource } from '../../database';
+import { AppDataSource, ImageRepository, UserRepository } from '../../database';
 import { DeleteResult, Repository } from 'typeorm';
 import { User } from '../../entities/user.entity';
 import * as bcrypt from 'bcryptjs';
@@ -6,11 +6,9 @@ import { UserRoles } from '../../entities/user.entity';
 import CreateUserDto from './dto/create-user.dto';
 import UpdateUserDto from './dto/update-user.dto';
 
-const UserRepository: Repository<User> = AppDataSource.getRepository(User);
-
 const create = async (userData: CreateUserDto): Promise<User> => {
 	try {
-		const { email, name, password, role, image } = userData;
+		const { email, name, password, role } = userData;
 
 		const existingUser = await UserRepository.findOne({
 			where: { email, name },
@@ -29,7 +27,7 @@ const create = async (userData: CreateUserDto): Promise<User> => {
 		newUser.name = name;
 		newUser.passwordHash = passwordHash;
 		newUser.role = role || UserRoles.USER;
-		newUser.image = image || '';
+		//newUser.avatar = image || '';
 
 		return await UserRepository.save(newUser);
 	} catch (error) {
@@ -39,7 +37,7 @@ const create = async (userData: CreateUserDto): Promise<User> => {
 };
 
 const getAll = async (): Promise<User[]> => {
-	return await UserRepository.find();
+	return await UserRepository.find({ relations: ['avatar'] });
 };
 
 const getById = async (id: string): Promise<User | null> => {
@@ -54,11 +52,11 @@ const deleteOne = async (id: string): Promise<DeleteResult> => {
 	return await UserRepository.delete(id);
 };
 
-const updateOne = async (userData: UpdateUserDto) => {
+const updateOne = async (userData: UpdateUserDto, userId: string) => {
 	try {
-		const { email, name, password, image } = userData;
+		const { email, name, password, avatar } = userData;
 
-		const user = await UserRepository.findOneBy({ email, name });
+		const user = await UserRepository.findOne({ where: { id: userId } });
 
 		if (!user) {
 			throw new Error('User not found');
@@ -71,8 +69,16 @@ const updateOne = async (userData: UpdateUserDto) => {
 			user.passwordHash = passwordHash;
 		}
 
-		if (image) {
-			user.image = image;
+		if (email) {
+			user.email = email;
+		}
+
+		if (name) {
+			user.name = name;
+		}
+
+		if (avatar) {
+			user.avatar = avatar;
 		}
 
 		return await UserRepository.save(user);

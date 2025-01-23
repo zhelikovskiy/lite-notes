@@ -11,6 +11,7 @@ router.post(
 	'/',
 	passport.authenticate('jwt', { session: false }),
 	verifyRole(UserRoles.ADMIN) as any,
+	upload.single('avatar'),
 	userController.create as any
 );
 router.get(
@@ -26,7 +27,7 @@ router.get(
 router.post(
 	'/:id',
 	passport.authenticate('jwt', { session: false }),
-	upload.single('file'),
+	upload.single('avatar'),
 	userController.updateOne as any
 );
 router.delete(

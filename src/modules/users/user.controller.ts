@@ -1,15 +1,16 @@
 import { Request, Response } from 'express';
 import { z } from 'zod';
 import userSerivice from './user.service';
-import { UserRoles } from '../../entities/user.entity';
-import { storage } from '../file-storage/file.storage';
+import { User, UserRoles } from '../../entities/user.entity';
+import imageService from '../images/image.service';
+import { Image } from '../../entities/image.entity';
 
 const createUserDataSchema = z.object({
 	email: z.string().email(),
 	name: z.string(),
 	password: z.string(),
 	role: z.enum([UserRoles.ADMIN, UserRoles.USER]),
-	image: z.string().optional(),
+	avatarId: z.string().optional(),
 });
 
 const getUserDataSchema = z.object({
@@ -20,14 +21,29 @@ const updateUserDataSchema = z.object({
 	email: z.string().email().optional(),
 	name: z.string().optional(),
 	password: z.string().optional(),
-	image: z.string().optional(),
+	avatar: z.instanceof(Image).nullable().optional(),
 });
 
 const create = async (req: Request, res: Response) => {
 	try {
-		const validatedData = await createUserDataSchema.parseAsync(req.body);
+		const { body, file } = req;
+
+		const validatedData = await createUserDataSchema.parseAsync(body);
 
 		const user = await userSerivice.create(validatedData);
+
+		if (file) {
+			const avatar = await imageService.create(user, file);
+
+			const userWithAvatar = await userSerivice.updateOne(
+				{ avatar: avatar },
+				user.id
+			);
+
+			return res
+				.status(201)
+				.json({ message: 'User created successfully', userWithAvatar });
+		}
 
 		return res.status(201).json({ message: 'User created successfully', user });
 	} catch (error: Error | any) {
@@ -83,18 +99,20 @@ const getOne = async (req: Request, res: Response) => {
 
 const updateOne = async (req: Request, res: Response) => {
 	try {
-		const validatedData = await updateUserDataSchema.parseAsync(req.body);
+		const { body, file } = req;
 
-		if (req.file && req.user) {
-			const { id: userId } = req.user as { id: string };
-			const filePath = await storage.uploadFile(userId, req.file);
+		const validatedData = await updateUserDataSchema.parseAsync(body);
 
-			validatedData.image = storage.getFileUrl(filePath);
+		const user = req.user as User;
+
+		if (file) {
+			const avatar = await imageService.create(user, file);
+			validatedData.avatar = avatar;
 		}
 
-		const user = await userSerivice.updateOne(validatedData);
+		const updatedUser = await userSerivice.updateOne(validatedData, user.id);
 
-		return res.status(200).json({ user });
+		return res.status(200).json({ updatedUser });
 	} catch (error: Error | any) {
 		console.error('UserController.updateOne() error:', error);
 

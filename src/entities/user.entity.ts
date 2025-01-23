@@ -4,6 +4,7 @@ import {
 	PrimaryGeneratedColumn,
 	OneToMany,
 	OneToOne,
+	JoinColumn,
 } from 'typeorm';
 import { Note } from './note.entity';
 import { Image } from './image.entity';
@@ -30,8 +31,9 @@ export class User {
 	@Column({ type: 'text', enum: UserRoles, default: UserRoles.USER })
 	role: UserRoles;
 
-	@OneToOne(() => Image, { nullable: true })
-	avatar: Image;
+	@OneToOne(() => Image, { nullable: true, onDelete: 'SET NULL' })
+	@JoinColumn()
+	avatar: Image | null;
 
 	@OneToMany(() => Image, (image) => image.user)
 	images: Image[];

@@ -1,30 +1,34 @@
-import { ImageRepository } from '../../database';
+import { AppDataSource, ImageRepository } from '../../database';
 import { Image } from '../../entities/image.entity';
 import { Note } from '../../entities/note.entity';
 import { User } from '../../entities/user.entity';
 import { ImageStorage } from '../file-storage/file.storage';
 
-const uploadImage = async (
+const create = async (
 	user: User,
 	file: Express.Multer.File
 ): Promise<Image> => {
 	const filePath = await ImageStorage.uploadFile(user.id, file);
 
 	const image = new Image();
-	image.url = filePath; // Сохраняем относительный путь
+	image.url = filePath;
 	image.user = user;
 
 	return await ImageRepository.save(image);
 };
 
-const getOneById = async (id: string, user: User): Promise<Image | null> => {
+const getAll = async (): Promise<Image[]> => {
+	return await ImageRepository.find();
+};
+
+const getOneById = async (id: string): Promise<Image | null> => {
 	return await ImageRepository.findOne({
-		where: { id, user },
+		where: { id },
 	});
 };
 
-const getImageUrlById = async (id: string, user: User): Promise<string> => {
-	const image = await getOneById(id, user);
+const getImageUrlById = async (id: string): Promise<string> => {
+	const image = await getOneById(id);
 
 	if (!image) {
 		throw new Error('Image not found');
@@ -33,18 +37,19 @@ const getImageUrlById = async (id: string, user: User): Promise<string> => {
 	return ImageStorage.getFileUrl(image.url); // Передаем относительный путь
 };
 
-const deleteOneById = async (id: string, user: User): Promise<void> => {
+const deleteOneById = async (id: string): Promise<void> => {
 	const image = await ImageRepository.findOne({
-		where: { id, user },
+		where: { id },
 	});
 
 	if (!image) {
 		throw new Error('Image not found');
 	}
 
-	await ImageStorage.deleteFile(image.url); // Передаем относительный путь
-
-	await ImageRepository.remove(image);
+	await AppDataSource.transaction(async (transactionalEntityManager) => {
+		await transactionalEntityManager.remove(image);
+		await ImageStorage.deleteFile(image.url);
+	});
 };
 
-export default { uploadImage, getOneById, deleteOneById, getImageUrlById };
+export default { create, getAll, getOneById, deleteOneById, getImageUrlById };
