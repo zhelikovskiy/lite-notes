@@ -65,4 +65,87 @@ const getAll = async (req: Request, res: Response) => {
 	}
 };
 
-export default { create, getAll };
+const getById = async (req: Request, res: Response) => {
+	try {
+		const { id: userId } = req.user as User;
+		const { id: noteId } = req.params;
+
+		const user = await userService.getById(userId);
+
+		if (!user) {
+			return res.status(404).json({ message: 'User not found' });
+		}
+
+		const note = await noteService.getById(noteId, user);
+
+		if (!note) {
+			return res.status(404).json({ message: 'Note not found' });
+		}
+
+		return res.status(200).json({ note });
+	} catch (error: Error | any) {
+		console.error('NoteController.getOne() error:', error);
+
+		return res.status(500).json({ message: 'Error fetching note' });
+	}
+};
+
+const updateOne = async (req: Request, res: Response) => {
+	try {
+		const { id: userId } = req.user as User;
+		const { id: noteId } = req.params;
+
+		const user = await userService.getById(userId);
+
+		if (!user) {
+			return res.status(404).json({ message: 'User not found' });
+		}
+
+		const validatedData = await updateNoteDataSchema.parseAsync(req.body);
+
+		const note = await noteService.getById(noteId, user);
+
+		if (!note) {
+			return res.status(404).json({ message: 'Note not found' });
+		}
+
+		const updatedNote = await noteService.update(validatedData, noteId, user);
+
+		return res
+			.status(200)
+			.json({ message: 'Note updated successfully', note: updatedNote });
+	} catch (error: Error | any) {
+		console.error('NoteController.updateOne() error:', error);
+
+		return res.status(500).json({ message: 'Error updating note' });
+	}
+};
+
+const deleteOne = async (req: Request, res: Response) => {
+	try {
+		const { id: userId } = req.user as User;
+		const { id: noteId } = req.params;
+
+		const user = await userService.getById(userId);
+
+		if (!user) {
+			return res.status(404).json({ message: 'User not found' });
+		}
+
+		const note = await noteService.getById(noteId, user);
+
+		if (!note) {
+			return res.status(404).json({ message: 'Note not found' });
+		}
+
+		await noteService.deleteOne(noteId, user);
+
+		return res.status(200).json({ message: 'Note deleted successfully' });
+	} catch (error: Error | any) {
+		console.error('NoteController.deleteOne() error:', error);
+
+		return res.status(500).json({ message: 'Error deleting note' });
+	}
+};
+
+export default { create, getAll, getById, updateOne, deleteOne };

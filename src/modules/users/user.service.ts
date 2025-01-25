@@ -41,7 +41,10 @@ const getAll = async (): Promise<User[]> => {
 };
 
 const getById = async (id: string): Promise<User | null> => {
-	return await UserRepository.findOneBy({ id });
+	return await UserRepository.findOne({
+		where: { id },
+		relations: ['avatar', 'images', 'notes'],
+	});
 };
 
 const getByEmail = async (email: string): Promise<User | null> => {

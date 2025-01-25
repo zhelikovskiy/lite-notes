@@ -20,4 +20,25 @@ router.get(
 	noteController.getAll as any
 );
 
+router.get(
+	'/:id',
+	passport.authenticate('jwt', { session: false }),
+	verifyRole(UserRoles.USER) as any,
+	noteController.getById as any
+);
+
+router.put(
+	'/:id',
+	passport.authenticate('jwt', { session: false }),
+	verifyRole(UserRoles.USER) as any,
+	noteController.updateOne as any
+);
+
+router.delete(
+	'/:id',
+	passport.authenticate('jwt', { session: false }),
+	verifyRole(UserRoles.USER) as any,
+	noteController.deleteOne as any
+);
+
 export default router;

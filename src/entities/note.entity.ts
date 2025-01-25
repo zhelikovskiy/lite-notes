@@ -1,4 +1,5 @@
 import {
+	AfterRemove,
 	Column,
 	Entity,
 	ManyToOne,

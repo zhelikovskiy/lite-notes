@@ -1,3 +1,4 @@
+import { In } from 'typeorm';
 import { AppDataSource, ImageRepository } from '../../database';
 import { Image } from '../../entities/image.entity';
 import { Note } from '../../entities/note.entity';
@@ -52,4 +53,22 @@ const deleteOneById = async (id: string): Promise<void> => {
 	});
 };
 
-export default { create, getAll, getOneById, deleteOneById, getImageUrlById };
+const deleteManyByIds = async (ids: string[]): Promise<void> => {
+	const images = await ImageRepository.findBy({ id: In(ids) });
+
+	await AppDataSource.transaction(async (transactionalEntityManager) => {
+		for (const image of images) {
+			await transactionalEntityManager.remove(image);
+			await ImageStorage.deleteFile(image.url);
+		}
+	});
+};
+
+export default {
+	create,
+	getAll,
+	getOneById,
+	deleteOneById,
+	getImageUrlById,
+	deleteManyByIds,
+};
